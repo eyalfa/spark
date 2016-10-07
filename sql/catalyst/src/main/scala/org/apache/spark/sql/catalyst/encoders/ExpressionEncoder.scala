@@ -133,7 +133,9 @@ object ExpressionEncoder {
         // to create a bigger tuple encoder, the original input object becomes a filed of the new
         // input tuple and can be null. So instead of creating a struct directly here, we should add
         // a null/None check and return a null struct if the null/None check fails.
-        val struct = CreateStruct(newSerializer)
+        val struct = CreateNamedStruct(newSerializer.zip(enc.schema.fieldNames).flatMap{
+          case (valExpr, name) => Seq( Literal(name), valExpr)
+        })
         val nullCheck = Or(
           IsNull(newInputObject),
           Invoke(Literal.fromObject(None), "equals", BooleanType, newInputObject :: Nil))
